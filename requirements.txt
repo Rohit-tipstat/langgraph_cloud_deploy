@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+openai
+pydantic
+python-dotenv
+langsmith
+langchain-core
+langchain-community 
+langgraph 
+langchain-openai 
+duckduckgo-search
+exa_py
+langgraph-supervisor
