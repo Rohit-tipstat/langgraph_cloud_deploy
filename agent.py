@@ -122,12 +122,8 @@ def exa_search(query: str):
         raise
 
 
-@traceable(run_type="chain", project_name="fuel_property_api")
-def fuel_output(place: str, composition: str, pvc_removal_step: Literal['Yes', 'No'], shredding_step: Literal['Yes', 'No'], r4_temperature: int, r4_negative_pressure: int, r4_blade_rotation_speed: int, r4_retention_time: int) -> FuelComposition:
-    logger.info(f"Starting fuel_output for place: {place}, pvc_removal: {pvc_removal_step}, shredding: {shredding_step}")
-    
-    # Sorting Supervisor Agent
-    sorting_supervisor_prompt = f"""
+# Sorting Supervisor Agent
+sorting_supervisor_prompt = f"""
 Role: As a highly experienced Sorting Supervisor specializing in municipal solid waste (MSW) processing, your primary responsibility is to identify and remove large, non-processable items from MSW at a processing plant in {place}. Your tasks include:
 
 Instructions: - Research and understand the process of removing large, non-processable items from MSW in {place}, utilizing available tools to gather detailed insights.
@@ -159,15 +155,15 @@ NOTE: - No waste category is considered for recycling or composting in this task
  - You are only bound to remove large, non-processable items from the waste composition. Do not remove any other components.
  - If you are removing certain percentage of a component from the waste composition, please mention the percentage removed and Make sure the new waste composition is accurate and normalized to 100%.
 """
-    sorting_supervisor_agent = create_react_agent(
-        model=llm,
-        tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
-        name="sorting_supervisor",
-        prompt=sorting_supervisor_prompt
-    )
+sorting_supervisor_agent = create_react_agent(
+    model=llm,
+    tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
+    name="sorting_supervisor",
+    prompt=sorting_supervisor_prompt
+)
 
     # Sorting Engineer Agent
-    sorting_engineer_prompt = """
+sorting_engineer_prompt = """
 Role: - As a mechanical sorting engineer specializing in refuse-derived fuel (RDF) production from municipal solid waste (MSW), your expertise involves operating advanced sorting equipment, including magnets for ferrous metals, eddy current separators for non-ferrous metals, glass removal systems, and aggregate/rock removal systems. You are provided with an MSW composition profile detailing the percentage of each material category.
 
 Instructions: - Mechanical sorting is a critical step in the RDF production process, where the goal is to remove unwanted materials from the waste stream to produce a high-quality RDF product.
@@ -197,15 +193,15 @@ Note: - Verify that no components are removed unless explicitly required by the 
  - Remove components that the mechanical sorting process is supposed to remove, including metals, glass, and aggregates.
  - Make sure the new waste composition is accurate and normalized to 100%.
 """
-    sorting_engineer_agent = create_react_agent(
-        model=llm,
-        tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
-        name="sorting_engineer",
-        prompt=sorting_engineer_prompt
-    )
+sorting_engineer_agent = create_react_agent(
+    model=llm,
+    tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
+    name="sorting_engineer",
+    prompt=sorting_engineer_prompt
+)
 
     # Chlorine Reduction Specialist Agent
-    chlorine_reduction_specialist_prompt = """
+chlorine_reduction_specialist_prompt = """
 Role: Lets do a role play where you are a Chlorine Reduction Specialist, tasked with reducing chlorine content in RDF.\n
 
 Instructions: - The Chlorine Specialist uses provided tools to validate efficacy assumptions, predict chlorine content reduction, and ensure the RDF stream meets low-chlorine specifications.\n
@@ -226,15 +222,15 @@ Tools: You have access to the following tools:
 Note: - The source links should also be returned along with the information.
  - Make sure the new waste composition is accurate and normalized to 100%.
 """
-    chlorine_reduction_specialist_agent = create_react_agent(
-        model=llm,
-        tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
-        name="chlorine_reduction_specialist",
-        prompt=chlorine_reduction_specialist_prompt
-    )
+chlorine_reduction_specialist_agent = create_react_agent(
+    model=llm,
+    tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
+    name="chlorine_reduction_specialist",
+    prompt=chlorine_reduction_specialist_prompt
+)
 
     # Shredding Purification Technician Agent
-    shredding_purification_technician_prompt = """
+shredding_purification_technician_prompt = """
 Role: - You are a Shredding and purification technician, responsible for shredding and fine metal removal in PDF fluff production.
 
 Instruction: - Research and understand the composition of the waste and what would be the new composition after shredding and removing fine metals from the composition.
@@ -259,15 +255,15 @@ Note:
  - You'll only remove components only if they are specified by the process and exist in the waste composition.
  - Make sure the new waste composition is accurate and normalized to 100%.
 """
-    shredding_purification_technician_agent = create_react_agent(
-        model=llm,
-        tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
-        name="shredding_purification_technician",
-        prompt=shredding_purification_technician_prompt
-    )
+shredding_purification_technician_agent = create_react_agent(
+    model=llm,
+    tools=[search_engine_duckduckgo, exa_search, search_engine_openai],
+    name="shredding_purification_technician",
+    prompt=shredding_purification_technician_prompt
+)
 
     # R4 Process Engineer Agent
-    R4_process_engineer_prompt = f"""
+R4_process_engineer_prompt = f"""
 Role: You are an higly experienced R4 Process Engineer with 10 years of experience handling R4 Machines.\n
 The R4 Machine is a specialized piece of equipment used in the recycling industry, particularly for processing waste materials.\n
 It converts RDF (Refuse-Derived Fuel) into a solid fuel product that can be used in various applications, including making solid engineered fuel using Refuse-Derived Fuel (RDF).
@@ -312,15 +308,15 @@ Note: - The output doughy and sticky, make sure you do the prediction for the fu
 - Do not assume any process. The process is already defined in the prompt.
 - Provide links to the sources of information used in the process.
 """
-    R4_process_engineer_agent = create_react_agent(
-        model=llm_o3,
-        tools=[search_engine_openai],
-        name="R4_process_engineer",
-        prompt=R4_process_engineer_prompt
-    )
+R4_process_engineer_agent = create_react_agent(
+    model=llm_o3,
+    tools=[search_engine_openai],
+    name="R4_process_engineer",
+    prompt=R4_process_engineer_prompt
+)
 
     # Water Bath Process Engineer Agent
-    water_bath_process_engineer_prompt = """
+water_bath_process_engineer_prompt = """
 Role: You are a higly experienced Water bath Process Engineer with expertise in understanding the process of water bath and how the properties of fuel chunks change after they pass through the water bath conveyor.\n
 
 Instruction:
@@ -355,15 +351,15 @@ Output: Provide a comprehensive explanation of: Tools: You have access to the fo
 Note: - From the doughy product extruded into 2"x2" chunks, it is important to understand how the water bath process affects the final product.
  - Make sure the output is in a quantified format, like a table or dictionary.
 """
-    water_bath_process_engineer_agent = create_react_agent(
-        model=llm_o3,
-        tools=[search_engine_openai, search_engine_duckduckgo, exa_search],
-        name="water_bath_process_engineer",
-        prompt=water_bath_process_engineer_prompt
-    )
+water_bath_process_engineer_agent = create_react_agent(
+    model=llm_o3,
+    tools=[search_engine_openai, search_engine_duckduckgo, exa_search],
+    name="water_bath_process_engineer",
+    prompt=water_bath_process_engineer_prompt
+)
 
     # Process Engineer Workflow
-    process_engineer_prompt = """
+process_engineer_prompt = """
 Role: As a process engineer with over 20 years of expertise in waste management, your role is to oversee the processing of municipal solid waste (MSW) to produce refuse-derived fuel (RDF). You are provided with a waste composition profile, including the percentage of each material category. Your task is to manage the waste processing workflow by coordinating with different specialized agents:
 
 Agents available: 
@@ -392,15 +388,15 @@ Note: - Ensure that the processes are executed accurately, with clear coordinati
 - Never do any task that is not assigned to you. You are ibky assigned to oversee the process and ensure that the agents execute their tasks correctly.\n
 
 """
-    logger.info("Creating process engineer workflow")
-    process_engineer_workflow = create_supervisor(
-        [sorting_engineer_agent, sorting_supervisor_agent, chlorine_reduction_specialist_agent, shredding_purification_technician_agent, R4_process_engineer_agent, water_bath_process_engineer_agent],
-        model=llm_o3,
-        output_mode="last_message",
-        prompt=process_engineer_prompt,
-        add_handoff_back_messages=True,
-    )
+logger.info("Creating process engineer workflow")
+process_engineer_workflow = create_supervisor(
+    [sorting_engineer_agent, sorting_supervisor_agent, chlorine_reduction_specialist_agent, shredding_purification_technician_agent, R4_process_engineer_agent, water_bath_process_engineer_agent],
+    model=llm_o3,
+    output_mode="last_message",
+    prompt=process_engineer_prompt,
+    add_handoff_back_messages=True,
+)
 
     # Compile workflow
-    logger.info("Compiling process engineer workflow")
-    app_workflow = process_engineer_workflow.compile()
+logger.info("Compiling process engineer workflow")
+app_workflow = process_engineer_workflow.compile()
